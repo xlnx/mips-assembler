@@ -1,0 +1,7 @@
+[
+{
+  "directory": "C:/Users/QwQ/Desktop/mips-assembler/build",
+  "command": "D:\\MINGW64\\mingw64\\bin\\g++.exe   @CMakeFiles/mipsa.dir/includes_CXX.rsp -pg -g   -std=gnu++14 -o CMakeFiles\\mipsa.dir\\src\\mipsa.cpp.obj -c C:\\Users\\QwQ\\Desktop\\mips-assembler\\src\\mipsa.cpp",
+  "file": "C:/Users/QwQ/Desktop/mips-assembler/src/mipsa.cpp"
+}
+]
