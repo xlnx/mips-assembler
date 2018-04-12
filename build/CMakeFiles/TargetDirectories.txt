@@ -1,3 +1,4 @@
-C:/Users/QwQ/Desktop/mips-assembler/build/CMakeFiles/rebuild_cache.dir
-C:/Users/QwQ/Desktop/mips-assembler/build/CMakeFiles/mipsa.dir
-C:/Users/QwQ/Desktop/mips-assembler/build/CMakeFiles/edit_cache.dir
+C:/Users/Koishi/Desktop/mips-assembler/build/CMakeFiles/rebuild_cache.dir
+C:/Users/Koishi/Desktop/mips-assembler/build/CMakeFiles/mipsa.dir
+C:/Users/Koishi/Desktop/mips-assembler/build/CMakeFiles/mipse.dir
+C:/Users/Koishi/Desktop/mips-assembler/build/CMakeFiles/edit_cache.dir

@@ -9,13 +9,13 @@
 			"type": "cppdbg",
 			"request": "launch",
 			"program": "${workspaceFolder}/build/mipsa.exe",
-			"args": ["test.mips"],
+			"args": ["./test.mips"],
 			"stopAtEntry": false,
 			"cwd": "${workspaceFolder}/build",
 			"environment": [],
 			"externalConsole": true,
 			"MIMode": "gdb",
-			"miDebuggerPath": "D:/mingw64/mingw64/bin/gdb.exe",
+			"miDebuggerPath": "D:/mingw-w64/mingw64/bin/gdb.exe",
 			"setupCommands": [
 				{
 					"description": "Enable pretty-printing for gdb",

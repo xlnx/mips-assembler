@@ -6,7 +6,19 @@
 
 #IncludeRegexTransform: 
 
-../include/mipsa_lexer.lang
+../include/mips_lang.h
+new_parser/parser.h
+-
+new_parser/variant/variant.h
+-
+initializer_list
+-
+string
+-
+sstream
+-
+type_traits
+-
 
 ../include/mipsa_options.h
 string
@@ -17,8 +29,6 @@ cstring
 -
 cstdlib
 -
-
-../include/mipsa_parser.lang
 
 ../include/new_parser/initializer.h
 vector
@@ -74,12 +84,6 @@ functional
 memory
 -
 
-../include/new_parser/variant/unique_variant.h
-variant.h
-../include/new_parser/variant/variant.h
-memory
--
-
 ../include/new_parser/variant/variant.h
 typeindex
 -
@@ -87,15 +91,11 @@ utility
 -
 functional
 -
-unique_variant.h
-../include/new_parser/variant/unique_variant.h
 
-C:/Users/QwQ/Desktop/mips-assembler/src/mipsa.cpp
+C:/Users/Koishi/Desktop/mips-assembler/src/mipsa.cpp
 mipsa_options.h
 -
 new_parser/parser.h
--
-new_parser/variant/variant.h
 -
 iostream
 -
@@ -107,8 +107,6 @@ sstream
 -
 string
 -
-mipsa_lexer.lang
--
-mipsa_parser.lang
+mips_lang.h
 -
 

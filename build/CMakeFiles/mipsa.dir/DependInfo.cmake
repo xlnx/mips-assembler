@@ -4,7 +4,7 @@ set(CMAKE_DEPENDS_LANGUAGES
   )
 # The set of files for implicit dependencies of each language:
 set(CMAKE_DEPENDS_CHECK_CXX
-  "C:/Users/QwQ/Desktop/mips-assembler/src/mipsa.cpp" "C:/Users/QwQ/Desktop/mips-assembler/build/CMakeFiles/mipsa.dir/src/mipsa.cpp.obj"
+  "C:/Users/Koishi/Desktop/mips-assembler/src/mipsa.cpp" "C:/Users/Koishi/Desktop/mips-assembler/build/CMakeFiles/mipsa.dir/src/mipsa.cpp.obj"
   )
 set(CMAKE_CXX_COMPILER_ID "GNU")
 
