@@ -4,8 +4,8 @@
 #include <iostream>
 #include <string>
 
-inline void throwError(::std::string error)
+inline void raise(const ::std::string &err)
 {
-	::std::cerr << "mipse: " << error << ::std::endl;
+	::std::cerr << "mipsa: " << err << ::std::endl;
 	exit(1);
 }

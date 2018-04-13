@@ -6,6 +6,32 @@
 
 #IncludeRegexTransform: 
 
+../include/exception.h
+cstdlib
+-
+iostream
+-
+string
+-
+
+../include/mips_encoding.h
+exception.h
+-
+map
+-
+string
+-
+sstream
+-
+iostream
+-
+vector
+-
+iomanip
+-
+functional
+-
+
 ../include/mips_lang.h
 new_parser/parser.h
 -
@@ -13,14 +39,20 @@ new_parser/variant/variant.h
 -
 initializer_list
 -
+map
+-
 string
 -
 sstream
 -
 type_traits
 -
+iomanip
+-
 
 ../include/mipsa_options.h
+exception.h
+-
 string
 -
 iostream
@@ -97,16 +129,14 @@ mipsa_options.h
 -
 new_parser/parser.h
 -
-iostream
+mips_lang.h
 -
-iomanip
+mips_encoding.h
+-
+iostream
 -
 fstream
 -
-sstream
--
 string
--
-mips_lang.h
 -
 

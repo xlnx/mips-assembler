@@ -48,6 +48,5 @@ set(CMAKE_MAKEFILE_PRODUCTS
 
 # Dependency information for all targets:
 set(CMAKE_DEPEND_INFO_FILES
-  "CMakeFiles/mipsa.dir/DependInfo.cmake"
-  "CMakeFiles/mipse.dir/DependInfo.cmake"
+  "CMakeFiles/mips.dir/DependInfo.cmake"
   )

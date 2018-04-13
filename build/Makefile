@@ -55,17 +55,6 @@ CMAKE_BINARY_DIR = C:\Users\Koishi\Desktop\mips-assembler\build
 #=============================================================================
 # Targets provided globally by CMake.
 
-# Special rule for the target rebuild_cache
-rebuild_cache:
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "Running CMake to regenerate build system..."
-	D:\CMake\bin\cmake.exe -H$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR)
-.PHONY : rebuild_cache
-
-# Special rule for the target rebuild_cache
-rebuild_cache/fast: rebuild_cache
-
-.PHONY : rebuild_cache/fast
-
 # Special rule for the target edit_cache
 edit_cache:
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "Running CMake cache editor..."
@@ -76,6 +65,17 @@ edit_cache:
 edit_cache/fast: edit_cache
 
 .PHONY : edit_cache/fast
+
+# Special rule for the target rebuild_cache
+rebuild_cache:
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "Running CMake to regenerate build system..."
+	D:\CMake\bin\cmake.exe -H$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR)
+.PHONY : rebuild_cache
+
+# Special rule for the target rebuild_cache
+rebuild_cache/fast: rebuild_cache
+
+.PHONY : rebuild_cache/fast
 
 # The main all target
 all: cmake_check_build_system
@@ -110,84 +110,44 @@ depend:
 .PHONY : depend
 
 #=============================================================================
-# Target rules for targets named mipsa
+# Target rules for targets named mips
 
 # Build rule for target.
-mipsa: cmake_check_build_system
-	$(MAKE) -f CMakeFiles\Makefile2 mipsa
-.PHONY : mipsa
+mips: cmake_check_build_system
+	$(MAKE) -f CMakeFiles\Makefile2 mips
+.PHONY : mips
 
 # fast build rule for target.
-mipsa/fast:
-	$(MAKE) -f CMakeFiles\mipsa.dir\build.make CMakeFiles/mipsa.dir/build
-.PHONY : mipsa/fast
+mips/fast:
+	$(MAKE) -f CMakeFiles\mips.dir\build.make CMakeFiles/mips.dir/build
+.PHONY : mips/fast
 
-#=============================================================================
-# Target rules for targets named mipse
+src/mips.obj: src/mips.cpp.obj
 
-# Build rule for target.
-mipse: cmake_check_build_system
-	$(MAKE) -f CMakeFiles\Makefile2 mipse
-.PHONY : mipse
-
-# fast build rule for target.
-mipse/fast:
-	$(MAKE) -f CMakeFiles\mipse.dir\build.make CMakeFiles/mipse.dir/build
-.PHONY : mipse/fast
-
-src/mipsa.obj: src/mipsa.cpp.obj
-
-.PHONY : src/mipsa.obj
+.PHONY : src/mips.obj
 
 # target to build an object file
-src/mipsa.cpp.obj:
-	cd /d c:\users\koishi\desktop\mips-assembler\build && $(MAKE) -f CMakeFiles\mipsa.dir\build.make CMakeFiles/mipsa.dir/src/mipsa.cpp.obj
-.PHONY : src/mipsa.cpp.obj
+src/mips.cpp.obj:
+	cd /d c:\users\koishi\desktop\mips-assembler\build && $(MAKE) -f CMakeFiles\mips.dir\build.make CMakeFiles/mips.dir/src/mips.cpp.obj
+.PHONY : src/mips.cpp.obj
 
-src/mipsa.i: src/mipsa.cpp.i
+src/mips.i: src/mips.cpp.i
 
-.PHONY : src/mipsa.i
-
-# target to preprocess a source file
-src/mipsa.cpp.i:
-	cd /d c:\users\koishi\desktop\mips-assembler\build && $(MAKE) -f CMakeFiles\mipsa.dir\build.make CMakeFiles/mipsa.dir/src/mipsa.cpp.i
-.PHONY : src/mipsa.cpp.i
-
-src/mipsa.s: src/mipsa.cpp.s
-
-.PHONY : src/mipsa.s
-
-# target to generate assembly for a file
-src/mipsa.cpp.s:
-	cd /d c:\users\koishi\desktop\mips-assembler\build && $(MAKE) -f CMakeFiles\mipsa.dir\build.make CMakeFiles/mipsa.dir/src/mipsa.cpp.s
-.PHONY : src/mipsa.cpp.s
-
-src/mipse.obj: src/mipse.cpp.obj
-
-.PHONY : src/mipse.obj
-
-# target to build an object file
-src/mipse.cpp.obj:
-	cd /d c:\users\koishi\desktop\mips-assembler\build && $(MAKE) -f CMakeFiles\mipse.dir\build.make CMakeFiles/mipse.dir/src/mipse.cpp.obj
-.PHONY : src/mipse.cpp.obj
-
-src/mipse.i: src/mipse.cpp.i
-
-.PHONY : src/mipse.i
+.PHONY : src/mips.i
 
 # target to preprocess a source file
-src/mipse.cpp.i:
-	cd /d c:\users\koishi\desktop\mips-assembler\build && $(MAKE) -f CMakeFiles\mipse.dir\build.make CMakeFiles/mipse.dir/src/mipse.cpp.i
-.PHONY : src/mipse.cpp.i
+src/mips.cpp.i:
+	cd /d c:\users\koishi\desktop\mips-assembler\build && $(MAKE) -f CMakeFiles\mips.dir\build.make CMakeFiles/mips.dir/src/mips.cpp.i
+.PHONY : src/mips.cpp.i
 
-src/mipse.s: src/mipse.cpp.s
+src/mips.s: src/mips.cpp.s
 
-.PHONY : src/mipse.s
+.PHONY : src/mips.s
 
 # target to generate assembly for a file
-src/mipse.cpp.s:
-	cd /d c:\users\koishi\desktop\mips-assembler\build && $(MAKE) -f CMakeFiles\mipse.dir\build.make CMakeFiles/mipse.dir/src/mipse.cpp.s
-.PHONY : src/mipse.cpp.s
+src/mips.cpp.s:
+	cd /d c:\users\koishi\desktop\mips-assembler\build && $(MAKE) -f CMakeFiles\mips.dir\build.make CMakeFiles/mips.dir/src/mips.cpp.s
+.PHONY : src/mips.cpp.s
 
 # Help Target
 help:
@@ -195,16 +155,12 @@ help:
 	@echo ... all (the default if no target is provided)
 	@echo ... clean
 	@echo ... depend
-	@echo ... rebuild_cache
-	@echo ... mipsa
-	@echo ... mipse
+	@echo ... mips
 	@echo ... edit_cache
-	@echo ... src/mipsa.obj
-	@echo ... src/mipsa.i
-	@echo ... src/mipsa.s
-	@echo ... src/mipse.obj
-	@echo ... src/mipse.i
-	@echo ... src/mipse.s
+	@echo ... rebuild_cache
+	@echo ... src/mips.obj
+	@echo ... src/mips.i
+	@echo ... src/mips.s
 .PHONY : help
 
 

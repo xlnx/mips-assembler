@@ -3,9 +3,11 @@
 #include <new_parser/parser.h>
 #include <new_parser/variant/variant.h>
 #include <initializer_list>
+#include <map>
 #include <string>
 #include <sstream>
 #include <type_traits>
+#include <iomanip>
 
 #define Expand() \
 make_reflect<ast_type>([](ast_type &ast){\
@@ -16,8 +18,7 @@ make_reflect<ast_type>([](ast_type &ast){\
 	return value_type();\
 })
 #define Print(x) \
-(mips::protected_mips_lang__::get_machine_code() << ::std::setw(8) << \
-	::std::setfill('0') << reinterpret_cast<int&>(x) << ::std::endl)
+(mips::protected_mips_lang__::get_machine_code().push_back(reinterpret_cast<unsigned&>(x)))
 
 namespace mips
 {
@@ -36,6 +37,37 @@ using lexer_list_type = initializer<lexer_elem_type>;
 
 namespace inst
 {
+
+inline ::std::string get_reg_label(unsigned index)
+{
+	static ::std::string labels[] = {
+		"$0", "$at", "$v0", "$v1", "$a0", "$a1", "$a2", "$a3", 
+		"$t0", "$t1", "$t2", "$t3", "$t4", "$t5", "$t6", "$t7", 
+		"$s0", "$s1", "$s2", "$s3", "$s4", "$s5", "$s6", "$s7",
+		"$t8", "$t9", "$k0", "$k1", "$gp", "$sp", "$fp", "$ra"
+	};
+	return labels[index];
+}
+
+inline ::std::string get_imm(int imm)
+{
+	::std::ostringstream os; os << imm; return os.str();
+}
+
+inline ::std::string get_immu(unsigned imm)
+{
+	::std::ostringstream os; os << imm; return os.str();
+}
+
+inline ::std::string get_addr(int reg, int offset)
+{
+	return get_imm(offset) + "(" + get_reg_label(reg) + ")";
+}
+
+inline ::std::string get_label(int label)
+{
+	return get_imm(label);
+}
 
 namespace protected_mips_inst__
 {
@@ -100,7 +132,41 @@ private:
 	struct { unsigned code: ic::field; };
 };
 
+template <typename ic>
+union encoder
+{
+	constexpr encoder(unsigned code):
+		code(code)
+	{
+	}
+
+	constexpr unsigned value() const
+	{
+		return code >> ic::lowbit;
+	}
+private:
+	struct { unsigned code: ic::field + ic::lowbit; };
+};
+
 }
+
+template <typename ic, typename ...ics>
+struct decode_inst
+{
+	static ::std::string gen(unsigned inst)
+	{
+		return decode_inst<ic>::gen(inst) + ", " + decode_inst<ics...>::gen(inst);
+	}
+};
+
+template <typename ic>
+struct decode_inst<ic>
+{
+	static ::std::string gen(unsigned inst)
+	{
+		return ic::gen_inst(inst);
+	}
+};
 
 namespace protected_mips_inst__
 {
@@ -159,54 +225,144 @@ struct gen_inst<ic>
 	static list_type gen() { return ic::token(); }
 };
 
+inline ::std::map<unsigned, variant<::std::function<::std::string(unsigned)>, 
+		::std::map<unsigned, ::std::function<::std::string(unsigned)>>> >
+	&get_map()
+{
+	static ::std::map<unsigned, variant<::std::function<::std::string(unsigned)>, 
+		::std::map<unsigned, ::std::function<::std::string(unsigned)>>> > mm;
+	return mm;
+}
+
+inline void on(unsigned op, unsigned func, const ::std::function<::std::string(unsigned)> &f)
+{
+	auto &mm = get_map();
+	if (!mm.count(op))
+	{
+		mm[op] = ::std::map<unsigned, ::std::function<::std::string(unsigned)>>();
+	}
+	mm[op].get<::std::map<unsigned, ::std::function<::std::string(unsigned)>>>()[func]
+		= f;
+}
+
+inline void on(unsigned op, const ::std::function<::std::string(unsigned)> &f)
+{
+	auto &mm = get_map();
+	mm[op] = ::std::function<::std::string(unsigned)>(f);//.get<::std::function<::std::string(unsigned)>>()
+		// = f;
+}
+
+inline ::std::string disassembly(unsigned inst)
+{
+	auto &mm = get_map();
+	union {
+		struct {
+			unsigned func: 6;
+			unsigned : 20;
+			unsigned op:6;
+		};
+		unsigned value;
+	} code;
+	code.value = inst;
+	::std::string result;
+	if (mm.count(code.op))
+	{
+		mm[code.op].make_match
+			<::std::function<::std::string(unsigned)>, 
+				::std::map<unsigned, ::std::function<::std::string(unsigned)>>>
+		(
+			[&result, inst](::std::function<::std::string(unsigned)> &f)
+			{
+				result = f(inst);
+			},
+			[&result, inst, code](::std::map<unsigned, ::std::function<::std::string(unsigned)>> &mmm)
+			{
+				if (mmm.count(code.func))
+				{
+					result = mmm[code.func](inst);
+				}
+				else
+				{
+					std::ostringstream os; 
+					os << ::std::setw(8) << ::std::setfill('0') << ::std::hex << inst;
+					throw ::std::logic_error("unknown instruction: " + os.str());
+				}
+			}
+		);
+	}
+	else
+	{
+		std::ostringstream os; 
+		os << ::std::setw(8) << ::std::setfill('0') << ::std::hex << inst;
+		throw ::std::logic_error("unknown instruction: " + os.str());
+	}
+	return result;
+}
+
 }
 
 struct rs: protected_mips_inst__::reg<21>
 {
 	static unsigned gen_code(ast_type &ast, int index) { return 
 		protected_mips_inst__::decoder<rs>(ast.term(index).get<int>()).value(); }
+	static ::std::string gen_inst(unsigned code) { return
+		get_reg_label(protected_mips_inst__::encoder<rs>(code).value()); }
 };
 
 struct rt: protected_mips_inst__::reg<16>
 {
 	static unsigned gen_code(ast_type &ast, int index) { return 
 		protected_mips_inst__::decoder<rt>(ast.term(index).get<int>()).value(); }
+	static ::std::string gen_inst(unsigned code) { return
+		get_reg_label(protected_mips_inst__::encoder<rt>(code).value()); }
 };
 
 struct rd: protected_mips_inst__::reg<11>
 {
 	static unsigned gen_code(ast_type &ast, int index) { return 
 		protected_mips_inst__::decoder<rd>(ast.term(index).get<int>()).value(); }
+	static ::std::string gen_inst(unsigned code) { return
+		get_reg_label(protected_mips_inst__::encoder<rd>(code).value()); }
 };
 
 struct shamt: protected_mips_inst__::imm<5, 6>
 {
 	static unsigned gen_code(ast_type &ast, int index) { return 
 		protected_mips_inst__::decoder<shamt>(ast.term(index).get<int>()).value(); }
+	static ::std::string gen_inst(unsigned code) { return
+		get_immu(protected_mips_inst__::encoder<shamt>(code).value()); }
 };
 
 struct imm: protected_mips_inst__::imm<16, 0>
 {
 	static unsigned gen_code(ast_type &ast, int index) { return 
 		protected_mips_inst__::decoder<imm>(ast.term(index).get<int>()).value(); }
+	static ::std::string gen_inst(unsigned code) { return
+		get_imm(protected_mips_inst__::encoder<imm>(code).value()); }
 };
 
 struct immu: protected_mips_inst__::imm<16, 0>
 {
 	static unsigned gen_code(ast_type &ast, int index) { return 
 		protected_mips_inst__::decoder<immu>(ast.term(index).get<int>()).value(); }
+	static ::std::string gen_inst(unsigned code) { return
+		get_immu(protected_mips_inst__::encoder<immu>(code).value()); }
 };
 
 struct target: protected_mips_inst__::label<26, 0>
 {
 	static unsigned gen_code(ast_type &ast, int index) { return 
 		protected_mips_inst__::decoder<target>(ast.term(index).get<int>()).value(); }
+	static ::std::string gen_inst(unsigned code) { return
+		get_label(protected_mips_inst__::encoder<target>(code).value()); }
 };
 
 struct label: protected_mips_inst__::label<16, 0>
 {
 	static unsigned gen_code(ast_type &ast, int index) { return 
 		protected_mips_inst__::decoder<label>(ast.term(index).get<int>()).value(); }
+	static ::std::string gen_inst(unsigned code) { return
+		get_label(protected_mips_inst__::encoder<label>(code).value()); }
 };
 
 struct addr: protected_mips_inst__::addr<16, 0>
@@ -214,6 +370,9 @@ struct addr: protected_mips_inst__::addr<16, 0>
 	static unsigned gen_code(ast_type &ast, int index) { return 
 		protected_mips_inst__::decoder<addr>(ast.term(index).get<int>()).value() |
 		protected_mips_inst__::decoder<rs>(ast.term(index + 2).get<int>()).value(); }
+	static ::std::string gen_inst(unsigned code) { return
+		get_addr(protected_mips_inst__::encoder<rs>(code).value(),
+			protected_mips_inst__::encoder<addr>(code).value()); }
 };
 
 struct func: protected_mips_inst__::imm<6, 0>
@@ -240,9 +399,9 @@ namespace protected_mips_lang__
 		return set;
 	}
 
-	inline ::std::ostringstream &get_machine_code()
+	inline ::std::vector<unsigned> &get_machine_code()
 	{
-		static ::std::ostringstream machine_code;
+		static ::std::vector<unsigned> machine_code;
 		return machine_code;
 	}
 }
@@ -279,6 +438,11 @@ void add(const ::std::string &inst, unsigned func, unsigned op = 0)
 		operator ""_riw(inst.c_str(), inst.length()));
 	protected_mips_lang__::get_inst_set() = protected_mips_lang__::get_inst_set() | 
 		protected_mips_inst__::gen<ics...>(inst, func, op);
+	inst::protected_mips_inst__::on(op, func,
+		[=](unsigned code) -> ::std::string {
+			return inst + " " + inst::decode_inst<ics...>::gen(code);
+		}
+	);
 }
 
 }
@@ -308,12 +472,17 @@ rule_type gen(const ::std::string &inst, unsigned op)
 }
 
 template <typename ...ics>
-void add(const ::std::string &inst, unsigned func)
+void add(const ::std::string &inst, unsigned op)
 {
 	protected_mips_lang__::get_inst_lex().push_back(operator ""_t(inst.c_str(), inst.length()) = 
 		operator ""_riw(inst.c_str(), inst.length()));
 	protected_mips_lang__::get_inst_set() = protected_mips_lang__::get_inst_set() | 
-		protected_mips_inst__::gen<ics...>(inst, func);
+		protected_mips_inst__::gen<ics...>(inst, op);
+	inst::protected_mips_inst__::on(op, 
+		[=](unsigned code) -> ::std::string {
+			return inst + " " + inst::decode_inst<ics...>::gen(code);
+		}
+	);
 }
 
 }
@@ -343,12 +512,17 @@ rule_type gen(const ::std::string &inst, unsigned op)
 }
 
 template <typename ...ics>
-void add(const ::std::string &inst, unsigned func)
+void add(const ::std::string &inst, unsigned op)
 {
 	protected_mips_lang__::get_inst_lex().push_back(operator ""_t(inst.c_str(), inst.length()) = 
 		operator ""_riw(inst.c_str(), inst.length()));
 	protected_mips_lang__::get_inst_set() = protected_mips_lang__::get_inst_set() | 
-		protected_mips_inst__::gen<ics...>(inst, func);
+		protected_mips_inst__::gen<ics...>(inst, op);
+	inst::protected_mips_inst__::on(op, 
+		[=](unsigned code) -> ::std::string {
+			return inst + " " + inst::decode_inst<ics...>::gen(code);
+		}
+	);
 }
 
 }
@@ -356,12 +530,19 @@ void add(const ::std::string &inst, unsigned func)
 class engine
 {
 public:
-	::std::string assembly(const ::std::string &s)
+	::std::vector<unsigned> assembly(const ::std::string &s)
 	{
-		protected_mips_lang__::get_machine_code() = ::std::ostringstream();
-		protected_mips_lang__::get_machine_code() << ::std::hex;
 		the_parser.parse(s.c_str());
-		return protected_mips_lang__::get_machine_code().str();
+		return protected_mips_lang__::get_machine_code();
+	}
+	::std::string disassembly(const ::std::vector<unsigned> &s)
+	{
+		::std::string res;
+		for (auto inst: s)
+		{
+			res += inst::protected_mips_inst__::disassembly(inst) + "\n";
+		}
+		return res;
 	}
 private:
 	reflected_lexer<ast_type> lex = reflected_lexer<ast_type>(

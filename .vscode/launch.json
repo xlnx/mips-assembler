@@ -9,7 +9,7 @@
 			"type": "cppdbg",
 			"request": "launch",
 			"program": "${workspaceFolder}/build/mipsa.exe",
-			"args": ["./test.mips"],
+			"args": ["./test.out", "-o", "test.cc", "-d"],
 			"stopAtEntry": false,
 			"cwd": "${workspaceFolder}/build",
 			"environment": [],
