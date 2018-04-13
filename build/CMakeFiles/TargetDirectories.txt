@@ -1,3 +1,0 @@
-C:/Users/Koishi/Desktop/mips-assembler/build/CMakeFiles/mips.dir
-C:/Users/Koishi/Desktop/mips-assembler/build/CMakeFiles/edit_cache.dir
-C:/Users/Koishi/Desktop/mips-assembler/build/CMakeFiles/rebuild_cache.dir

@@ -1,9 +1,0 @@
-slt $v0, $0, $at
-add $t6, $v0, $v0
-add $t6, $t6, $t6
-nor $t2, $0, $0
-add $t2, $t2, $t2
-sw $a2, 4($v1)
-lw $a1, 0($v1)
-add $a1, $a1, $a1
-add $a1, $a1, $a1

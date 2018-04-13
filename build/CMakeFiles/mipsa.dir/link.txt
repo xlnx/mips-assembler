@@ -1,3 +1,0 @@
-D:\CMake\bin\cmake.exe -E remove -f CMakeFiles\mipsa.dir/objects.a
-D:\mingw-w64\mingw64\bin\ar.exe cr CMakeFiles\mipsa.dir/objects.a @CMakeFiles\mipsa.dir\objects1.rsp
-D:\mingw-w64\mingw64\bin\g++.exe -pg -g   -Wl,--whole-archive CMakeFiles\mipsa.dir/objects.a -Wl,--no-whole-archive  -o mipsa.exe -Wl,--out-implib,libmipsa.dll.a -Wl,--major-image-version,0,--minor-image-version,0 @CMakeFiles\mipsa.dir\linklibs.rsp

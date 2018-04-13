@@ -1,7 +1,0 @@
-[
-{
-  "directory": "C:/Users/Koishi/Desktop/mips-assembler/build",
-  "command": "D:\\mingw-w64\\mingw64\\bin\\g++.exe   @CMakeFiles/mips.dir/includes_CXX.rsp -pg -g   -std=gnu++14 -o CMakeFiles\\mips.dir\\src\\mips.cpp.obj -c C:\\Users\\Koishi\\Desktop\\mips-assembler\\src\\mips.cpp",
-  "file": "C:/Users/Koishi/Desktop/mips-assembler/src/mips.cpp"
-}
-]
