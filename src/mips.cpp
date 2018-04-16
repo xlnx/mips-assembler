@@ -78,9 +78,16 @@ int main(int argc, char *argv[])
 
 	ifstream fin(options.input_file_name);
 	string mips_code, line;
-	while (getline(fin, line))
+	if (fin)
 	{
-		mips_code += line + "\n";
+		while (getline(fin, line))
+		{
+			mips_code += line + "\n";
+		}
+	}
+	else
+	{
+		raise("File not found: " + options.output_file_name);
 	}
 
 	if (options.disassembly)
@@ -107,6 +114,10 @@ int main(int argc, char *argv[])
 			ofstream(options.output_file_name) << encode(engine.assembly(mips_code));
 		}
 		catch (parser<mips::ast_type>::exception_type e)
+		{
+			raise(e.what());
+		}
+		catch (mips::exception e)
 		{
 			raise(e.what());
 		}

@@ -23,7 +23,27 @@ make_reflect<ast_type>([](ast_type &ast){\
 namespace mips
 {
 
-using ast_type = ast<variant<unsigned, int>>;
+struct exception: public ::std::logic_error
+{
+	exception(const ::std::string &msg):
+		::std::logic_error(msg)
+	{
+	}
+};
+
+using ast_type = ast<variant<unsigned, int, ::std::string>>;
+
+struct unsettled_instruction
+{
+	unsettled_instruction(unsigned pos, ast_type &ast):
+		inst_pos(pos), ast(ast)
+	{
+	}
+	unsigned inst_pos;
+	ast_type ast;
+};
+
+using instruction = variant<unsigned, unsettled_instruction>;
 // using ast_type = ast<long long>;
 using value_type = typename ast_type::value_type;
 
@@ -34,6 +54,39 @@ using rule_type = parser_rule<ast_type>;
 using lexer_elem_type = reflected_lexer_init_element<ast_type, char>;
 
 using lexer_list_type = initializer<lexer_elem_type>;
+
+namespace protected_mips_lang__
+{
+	inline lexer_initializer &get_inst_lex()
+	{
+		static lexer_initializer lex;
+		return lex;
+	}
+
+	inline parser_initializer<ast_type> &get_inst_set()
+	{
+		static parser_initializer<ast_type> set;
+		return set;
+	}
+
+	inline ::std::vector<unsigned> &get_machine_code()
+	{
+		static ::std::vector<unsigned> machine_code;
+		return machine_code;
+	}
+
+	inline unsigned &get_inst_addr()
+	{
+		static unsigned addr = 0;
+		return addr;
+	}
+
+	inline ::std::map<::std::string, unsigned> &get_label_map()
+	{
+		static ::std::map<::std::string, unsigned> m;
+		return m;
+	}
+}
 
 namespace inst
 {
@@ -359,8 +412,19 @@ struct target: protected_mips_inst__::label<26, 0>
 
 struct label: protected_mips_inst__::label<16, 0>
 {
-	static unsigned gen_code(ast_type &ast, int index) { return 
-		protected_mips_inst__::decoder<label>(ast.term(index).get<int>()).value(); }
+	static unsigned gen_code(ast_type &ast, int index) { 
+		auto &lbl = ast.term(index).get<::std::string>();
+		if (!protected_mips_lang__::get_label_map().count(lbl))
+		{
+			throw exception("Unknown label: " + lbl);
+		}
+						// the label may be undefined,
+						// TODO: modify this.
+						//int(::std::stoi(src.substr(1)));
+		return protected_mips_inst__::decoder<label>(
+			protected_mips_lang__::get_label_map()[lbl] -
+				protected_mips_lang__::get_inst_addr()
+		).value(); }
 	static ::std::string gen_inst(unsigned code) { return
 		get_label(protected_mips_inst__::encoder<label>(code).value()); }
 };
@@ -385,27 +449,6 @@ struct op: protected_mips_inst__::imm<6, 26>
 
 }
 
-namespace protected_mips_lang__
-{
-	inline lexer_initializer &get_inst_lex()
-	{
-		static lexer_initializer lex;
-		return lex;
-	}
-
-	inline parser_initializer<ast_type> &get_inst_set()
-	{
-		static parser_initializer<ast_type> set;
-		return set;
-	}
-
-	inline ::std::vector<unsigned> &get_machine_code()
-	{
-		static ::std::vector<unsigned> machine_code;
-		return machine_code;
-	}
-}
-
 namespace rtype
 {
 
@@ -424,6 +467,7 @@ rule_type gen(const ::std::string &inst, unsigned func, unsigned op = 0)
 				inst = inst | inst::protected_mips_inst__::decoder<inst::func>(func).value() |
 					inst::protected_mips_inst__::decoder<inst::op>(op).value();
 				Print(inst);
+				return value_type();
 			}
 		)
 	);
@@ -464,6 +508,7 @@ rule_type gen(const ::std::string &inst, unsigned op)
 				auto inst = inst::protected_mips_inst__::gen_code<ics...>::gen(ast, 1);
 				inst = inst | inst::protected_mips_inst__::decoder<inst::op>(op).value();
 				Print(inst);
+				return value_type();
 			}
 		)
 	);
@@ -504,6 +549,7 @@ rule_type gen(const ::std::string &inst, unsigned op)
 				auto inst = inst::protected_mips_inst__::gen_code<ics...>::gen(ast, 1);
 				inst = inst | inst::protected_mips_inst__::decoder<inst::op>(op).value();
 				Print(inst);
+				return value_type();
 			}
 		)
 	);
@@ -532,6 +578,8 @@ class engine
 public:
 	::std::vector<unsigned> assembly(const ::std::string &s)
 	{
+		constexpr int origin = 0;
+		protected_mips_lang__::get_inst_addr() = origin;
 		the_parser.parse(s.c_str());
 		return protected_mips_lang__::get_machine_code();
 	}
@@ -551,7 +599,7 @@ private:
 			inst::protected_mips_inst__::cat(
 				"label"_t = "[A-Za-z_]\\w*"_rw
 					>> lexer_reflect<ast_type>([](const ::std::string &src)->value_type{
-						return int(::std::stoi(src.substr(1)));
+						return ::std::string(src);
 					}),
 				protected_mips_lang__::get_inst_lex()
 			),
@@ -578,12 +626,13 @@ private:
 							switch (src[2])
 							{
 							case 'p': return 29;
-							default: return 16 + src[3] - '0';
+							default: return 16 + src[2] - '0';
 							}
 						case 'k': return 26 + src[2] - '0';
 						case 'g': return 28;
 						case 'f': return 30;
 						case 'r': return 31;
+						default: throw exception("Unexpected register value.");
 						}
 					}),
 
@@ -620,30 +669,40 @@ private:
 		"start"_p = 
 			"Lines"_p >> Expand(),
 		"Lines"_p = 
-			"Instruction"_p + "Lines"_p >> Expand()
+			"Line"_p + "Lines"_p >> Expand()
 			|""_t >> NoReflect(),
-		"Line"_p = 
-			"LineBody"_p >> Expand(),
-		"LineLabel"_p = 
-			"label"_t + ":"_t
-				>> make_reflect<ast_type>([](ast_type &ast)->value_type{
-					//::std::cout << ast.term(0) << ::std::endl;
-				})
-			|""_t
-				>> NoReflect(),
-		"LineBody"_p = 
-			//"Directive"_p >> Expand()
-			"Instruction"_p >> Expand(),
+		// "Line"_p = 
+		// 	"LineBody"_p >> Expand(),
+		// "LineLabel"_p = 
+		// 	"label"_t + ":"_t
+		// 		>> make_reflect<ast_type>([](ast_type &ast)->value_type{
+		// 			//::std::cout << ast.term(0) << ::std::endl;
+		// 			//return value_type();
+		// 		})
+		// 	|""_t
+		// 		>> NoReflect(),
+		// "LineBody"_p = 
+		// 	//"Directive"_p >> Expand()
+		// 	"Instruction"_p >> Expand(),
 		//"Directive"_p =
 		//	""_t,
+		"Line"_p = 
+			"Instruction"_p
+				>> make_reflect<ast_type>([](ast_type &ast)->value_type{
+					ast[0].gen(); protected_mips_lang__::get_inst_addr() ++;
+					return value_type();
+				})
+			|"label"_t + ":"_t + "Instruction"_p
+				>> make_reflect<ast_type>([](ast_type &ast)->value_type{
+					auto &elem = ast.term(0).get<::std::string>();
+					protected_mips_lang__::get_label_map()[elem] = 
+						protected_mips_lang__::get_inst_addr();
+					ast[0].gen(); protected_mips_lang__::get_inst_addr() ++;
+					return value_type();
+				}),
 		"Instruction"_p = 
 			protected_mips_lang__::get_inst_set()
 	);
-};
-
-inline parser<ast_type> gen_parser()
-{
-	
 };
 
 }
