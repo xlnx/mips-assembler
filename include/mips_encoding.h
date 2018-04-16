@@ -29,7 +29,10 @@ inline ::std::function<::std::vector<unsigned>(const ::std::string&)>
 					{
 						unsigned inst;
 						::std::istringstream iss(l);
-						iss >> ::std::hex >> inst;
+						if (!(iss >> ::std::hex >> inst))
+						{
+							throw 1;
+						}
 						prog.push_back(inst);
 					}
 					return prog;
@@ -67,6 +70,10 @@ inline ::std::function<::std::vector<unsigned>(const ::std::string&)>
 									while (*p && !strchr(",;", *p))
 									{
 										++p;
+									}
+									if (!*p) 
+									{
+										throw 1;
 									}
 									::std::string s(q, p);
 									++p;

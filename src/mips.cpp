@@ -93,9 +93,18 @@ int main(int argc, char *argv[])
 	if (options.disassembly)
 	{
 		auto decode = mips::get_decoder(options.format);
+		vector<unsigned> cc;
 		try
 		{
-			ofstream(options.output_file_name) << engine.disassembly(decode(mips_code));
+			cc = decode(mips_code);
+		}
+		catch (...)
+		{
+			raise("Unrecognized file format.");
+		}
+		try
+		{
+			ofstream(options.output_file_name) << engine.disassembly(cc);
 		}
 		catch (::std::logic_error e)
 		{
@@ -103,7 +112,7 @@ int main(int argc, char *argv[])
 		}
 		catch (...)
 		{
-			raise("disassembly failed.");
+			raise("Fisassembly failed.");
 		}
 	}
 	else
@@ -115,7 +124,7 @@ int main(int argc, char *argv[])
 		}
 		catch (parser<mips::ast_type>::exception_type e)
 		{
-			raise(e.what());
+			raise(options.input_file_name + e.what());
 		}
 		catch (mips::exception e)
 		{

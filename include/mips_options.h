@@ -6,10 +6,30 @@
 #include <cstring>
 #include <cstdlib>
 
+inline void printHelp()
+{
+	auto help = ""\
+	"-h                    \tShow this help message.\n"\
+	"-o <out-file-name>    \tSpecify an output file.\n"\
+	"-d                    \tDisassembly.\n"\
+	"-f <format>           \tSpecify the target file format listed, default is coe.\n"\
+	"\t\t\tcoe\n"\
+	"\t\t\tplain\n";
+	::std::cerr << help << ::std::endl;
+}
+
 struct option_parser
 {
 	option_parser(int argc, char *argv[])
 	{
+		for (int i = 1; i != argc; ++i)
+		{
+			if (!strcmp(argv[i], "-h"))
+			{
+				printHelp();
+				exit(0);
+			}
+		}
 		for (int i = 1; i != argc; ++i)
 		{
 			if (!strcmp(argv[i], "-o"))
@@ -63,6 +83,6 @@ struct option_parser
 	
 	::std::string input_file_name;
 	::std::string output_file_name;
-	::std::string format = "plain";
+	::std::string format = "coe";
 	bool disassembly = false;
 };

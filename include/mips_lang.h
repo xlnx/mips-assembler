@@ -121,21 +121,6 @@ private:
 		"Lines"_p = 
 			"Line"_p + "Lines"_p >> Expand()
 			|""_t >> NoReflect(),
-		// "Line"_p = 
-		// 	"LineBody"_p >> Expand(),
-		// "LineLabel"_p = 
-		// 	"label"_t + ":"_t
-		// 		>> make_reflect<ast_type>([](ast_type &ast)->value_type{
-		// 			//::std::cout << ast.term(0) << ::std::endl;
-		// 			//return value_type();
-		// 		})
-		// 	|""_t
-		// 		>> NoReflect(),
-		// "LineBody"_p = 
-		// 	//"Directive"_p >> Expand()
-		// 	"Instruction"_p >> Expand(),
-		//"Directive"_p =
-		//	""_t,
 		"Line"_p = 
 			"Instruction"_p
 				>> make_reflect<ast_type>([](ast_type &ast)->value_type{
